@@ -1,0 +1,37 @@
+{
+    "title": "projects",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "primary_key": true,
+            "autoincrement": true
+        },
+        "user_id": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "original_prompt": {
+            "type": "string"
+        },
+        "applied_changes": {
+            "type": "string",
+            "description": "JSON array of change prompts"
+        },
+        "html": {
+            "type": "string"
+        },
+        "revision": {
+            "type": "integer"
+        }
+    },
+    "required": [
+        "user_id",
+        "name",
+        "original_prompt",
+        "html",
+        "revision"
+    ]
+}

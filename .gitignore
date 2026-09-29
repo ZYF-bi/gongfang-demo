@@ -1,0 +1,20 @@
+# Private environment and runtime state
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+node_modules/
+dist/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+logs/
+*.log
+*.db
+*.sqlite*
+.data/
+test-results/
+playwright-report/
