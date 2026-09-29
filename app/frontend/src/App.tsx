@@ -6,6 +6,8 @@ import BlogRoutes from './blog-routes';
 import Index from './pages/Index';
 import AuthCallback from './pages/AuthCallback';
 import AuthError from './pages/AuthError';
+import Login from './pages/Login';
+import Share from './pages/Share';
 // MODULE_IMPORTS_START
 // MODULE_IMPORTS_END
 
@@ -15,6 +17,8 @@ const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
     {/* <Route path="/blog/*" element={<BlogRoutes />} /> */}
+    <Route path="/login" element={<Login />} />
+    <Route path="/s/:token" element={<Share />} />
     <Route path="/auth/callback" element={<AuthCallback />} />
     <Route path="/auth/error" element={<AuthError />} />
     {/* MODULE_ROUTES_START */}

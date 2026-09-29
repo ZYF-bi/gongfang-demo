@@ -5,18 +5,15 @@ from sqlalchemy import DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 
-class Projects(Base):
-    __tablename__ = "projects"
+class Generation_logs(Base):
+    __tablename__ = "generation_logs"
     __table_args__ = {"extend_existing": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     user_id: Mapped[str] = mapped_column(String, index=True, nullable=False)
-    name: Mapped[str] = mapped_column(String, nullable=False)
-    original_prompt: Mapped[str] = mapped_column(String, nullable=False)
-    applied_changes: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    html: Mapped[str] = mapped_column(String, nullable=False)
-    revision: Mapped[int] = mapped_column(Integer, nullable=False)
-    share_token: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    messages: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    model: Mapped[str] = mapped_column(String, nullable=False)
+    mode: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    usage: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     created_at: Mapped[Optional[PyDateTime]] = mapped_column(DateTime(timezone=True), default=PyDateTime.now)
     updated_at: Mapped[Optional[PyDateTime]] = mapped_column(DateTime(timezone=True), default=PyDateTime.now, onupdate=PyDateTime.now)

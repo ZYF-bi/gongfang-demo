@@ -25,6 +25,14 @@
         },
         "revision": {
             "type": "integer"
+        },
+        "share_token": {
+            "type": "string",
+            "description": "Random token for public share link; null when not shared"
+        },
+        "messages": {
+            "type": "string",
+            "description": "JSON array of chat turns {role,text,revision}"
         }
     },
     "required": [

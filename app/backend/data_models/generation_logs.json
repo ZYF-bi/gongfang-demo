@@ -1,0 +1,32 @@
+{
+    "title": "generation_logs",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "primary_key": true,
+            "autoincrement": true
+        },
+        "user_id": {
+            "type": "string"
+        },
+        "model": {
+            "type": "string"
+        },
+        "mode": {
+            "type": "string"
+        },
+        "status": {
+            "type": "string"
+        },
+        "usage": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "user_id",
+        "model",
+        "mode",
+        "status"
+    ]
+}

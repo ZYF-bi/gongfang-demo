@@ -1,0 +1,32 @@
+{
+    "title": "email_accounts",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "primary_key": true,
+            "autoincrement": true
+        },
+        "email": {
+            "type": "string",
+            "unique": true
+        },
+        "password_hash": {
+            "type": "string"
+        },
+        "salt": {
+            "type": "string"
+        },
+        "failed_attempts": {
+            "type": "integer"
+        },
+        "locked_until": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "email",
+        "password_hash",
+        "salt"
+    ]
+}

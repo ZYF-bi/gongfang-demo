@@ -1,0 +1,35 @@
+{
+    "title": "project_versions",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "integer",
+            "primary_key": true,
+            "autoincrement": true
+        },
+        "user_id": {
+            "type": "string"
+        },
+        "project_id": {
+            "type": "integer"
+        },
+        "revision": {
+            "type": "integer"
+        },
+        "prompt": {
+            "type": "string"
+        },
+        "summary": {
+            "type": "string"
+        },
+        "html": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "user_id",
+        "project_id",
+        "revision",
+        "html"
+    ]
+}

@@ -9,50 +9,44 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
-from services.projects import ProjectsService
+from services.project_versions import Project_versionsService
 from dependencies.auth import get_current_user
 from schemas.auth import UserResponse
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/entities/projects", tags=["projects"])
+router = APIRouter(prefix="/api/v1/entities/project_versions", tags=["project_versions"])
 
 
 # ---------- Pydantic Schemas ----------
-class ProjectsData(BaseModel):
+class Project_versionsData(BaseModel):
     """Entity data schema (for create/update)"""
-    name: str
-    original_prompt: str
-    applied_changes: str = None
-    html: str
+    project_id: int
     revision: int
-    share_token: str = None
-    messages: str = None
+    prompt: str = None
+    summary: str = None
+    html: str
 
 
-class ProjectsUpdateData(BaseModel):
+class Project_versionsUpdateData(BaseModel):
     """Update entity data (partial updates allowed)"""
-    name: Optional[str] = None
-    original_prompt: Optional[str] = None
-    applied_changes: Optional[str] = None
-    html: Optional[str] = None
+    project_id: Optional[int] = None
     revision: Optional[int] = None
-    share_token: Optional[str] = None
-    messages: Optional[str] = None
+    prompt: Optional[str] = None
+    summary: Optional[str] = None
+    html: Optional[str] = None
 
 
-class ProjectsResponse(BaseModel):
+class Project_versionsResponse(BaseModel):
     """Entity response schema"""
     id: int
     user_id: str
-    name: str
-    original_prompt: str
-    applied_changes: Optional[str] = None
-    html: str
+    project_id: int
     revision: int
-    share_token: Optional[str] = None
-    messages: Optional[str] = None
+    prompt: Optional[str] = None
+    summary: Optional[str] = None
+    html: str
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -60,38 +54,38 @@ class ProjectsResponse(BaseModel):
         from_attributes = True
 
 
-class ProjectsListResponse(BaseModel):
+class Project_versionsListResponse(BaseModel):
     """List response schema"""
-    items: List[ProjectsResponse]
+    items: List[Project_versionsResponse]
     total: int
     skip: int
     limit: int
 
 
-class ProjectsBatchCreateRequest(BaseModel):
+class Project_versionsBatchCreateRequest(BaseModel):
     """Batch create request"""
-    items: List[ProjectsData]
+    items: List[Project_versionsData]
 
 
-class ProjectsBatchUpdateItem(BaseModel):
+class Project_versionsBatchUpdateItem(BaseModel):
     """Batch update item"""
     id: int
-    updates: ProjectsUpdateData
+    updates: Project_versionsUpdateData
 
 
-class ProjectsBatchUpdateRequest(BaseModel):
+class Project_versionsBatchUpdateRequest(BaseModel):
     """Batch update request"""
-    items: List[ProjectsBatchUpdateItem]
+    items: List[Project_versionsBatchUpdateItem]
 
 
-class ProjectsBatchDeleteRequest(BaseModel):
+class Project_versionsBatchDeleteRequest(BaseModel):
     """Batch delete request"""
     ids: List[int]
 
 
 # ---------- Routes ----------
-@router.get("", response_model=ProjectsListResponse)
-async def query_projectss(
+@router.get("", response_model=Project_versionsListResponse)
+async def query_project_versionss(
     query: str = Query(None, description='Query conditions as JSON, e.g. {"id":2} or {"id":{"$gte":2}}'),
     sort: str = Query(None, description="Sort field (prefix with '-' for descending)"),
     skip: int = Query(0, ge=0, description="Number of records to skip"),
@@ -100,10 +94,10 @@ async def query_projectss(
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Query projectss with filtering, sorting, and pagination (user can only see their own records)"""
-    logger.debug(f"Querying projectss: query={query}, sort={sort}, skip={skip}, limit={limit}, fields={fields}")
+    """Query project_versionss with filtering, sorting, and pagination (user can only see their own records)"""
+    logger.debug(f"Querying project_versionss: query={query}, sort={sort}, skip={skip}, limit={limit}, fields={fields}")
     
-    service = ProjectsService(db)
+    service = Project_versionsService(db)
     try:
         # Parse query JSON if provided
         query_dict = None
@@ -120,79 +114,79 @@ async def query_projectss(
             sort=sort,
             user_id=str(current_user.id),
         )
-        logger.debug(f"Found {result['total']} projectss")
+        logger.debug(f"Found {result['total']} project_versionss")
         return result
     except HTTPException:
         raise
     except ValueError as e:
-        logger.warning(f"Invalid projects query: {str(e)}")
+        logger.warning(f"Invalid project_versions query: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Error querying projectss: {str(e)}", exc_info=True)
+        logger.error(f"Error querying project_versionss: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
 
-@router.get("/{id}", response_model=ProjectsResponse)
-async def get_projects(
+@router.get("/{id}", response_model=Project_versionsResponse)
+async def get_project_versions(
     id: int,
     fields: str = Query(None, description="Comma-separated list of fields to return"),
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Get a single projects by ID (user can only see their own records)"""
-    logger.debug(f"Fetching projects with id: {id}, fields={fields}")
+    """Get a single project_versions by ID (user can only see their own records)"""
+    logger.debug(f"Fetching project_versions with id: {id}, fields={fields}")
     
-    service = ProjectsService(db)
+    service = Project_versionsService(db)
     try:
         result = await service.get_by_id(id, user_id=str(current_user.id))
         if not result:
-            logger.warning(f"Projects with id {id} not found")
-            raise HTTPException(status_code=404, detail="Projects not found")
+            logger.warning(f"Project_versions with id {id} not found")
+            raise HTTPException(status_code=404, detail="Project_versions not found")
         
         return result
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching projects {id}: {str(e)}", exc_info=True)
+        logger.error(f"Error fetching project_versions {id}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-@router.post("", response_model=ProjectsResponse, status_code=201)
-async def create_projects(
-    data: ProjectsData,
+@router.post("", response_model=Project_versionsResponse, status_code=201)
+async def create_project_versions(
+    data: Project_versionsData,
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Create a new projects"""
-    logger.debug(f"Creating new projects with data: {data}")
+    """Create a new project_versions"""
+    logger.debug(f"Creating new project_versions with data: {data}")
     
-    service = ProjectsService(db)
+    service = Project_versionsService(db)
     try:
         result = await service.create(data.model_dump(), user_id=str(current_user.id))
         if not result:
-            raise HTTPException(status_code=400, detail="Failed to create projects")
+            raise HTTPException(status_code=400, detail="Failed to create project_versions")
         
-        logger.info(f"Projects created successfully with id: {result.id}")
+        logger.info(f"Project_versions created successfully with id: {result.id}")
         return result
     except ValueError as e:
-        logger.error(f"Validation error creating projects: {str(e)}")
+        logger.error(f"Validation error creating project_versions: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Error creating projects: {str(e)}", exc_info=True)
+        logger.error(f"Error creating project_versions: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-@router.post("/batch", response_model=List[ProjectsResponse], status_code=201)
-async def create_projectss_batch(
-    request: ProjectsBatchCreateRequest,
+@router.post("/batch", response_model=List[Project_versionsResponse], status_code=201)
+async def create_project_versionss_batch(
+    request: Project_versionsBatchCreateRequest,
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Create multiple projectss in a single request"""
-    logger.debug(f"Batch creating {len(request.items)} projectss")
+    """Create multiple project_versionss in a single request"""
+    logger.debug(f"Batch creating {len(request.items)} project_versionss")
     
-    service = ProjectsService(db)
+    service = Project_versionsService(db)
     results = []
     
     try:
@@ -201,7 +195,7 @@ async def create_projectss_batch(
             if result:
                 results.append(result)
         
-        logger.info(f"Batch created {len(results)} projectss successfully")
+        logger.info(f"Batch created {len(results)} project_versionss successfully")
         return results
     except Exception as e:
         await db.rollback()
@@ -209,16 +203,16 @@ async def create_projectss_batch(
         raise HTTPException(status_code=500, detail=f"Batch create failed: {str(e)}")
 
 
-@router.put("/batch", response_model=List[ProjectsResponse])
-async def update_projectss_batch(
-    request: ProjectsBatchUpdateRequest,
+@router.put("/batch", response_model=List[Project_versionsResponse])
+async def update_project_versionss_batch(
+    request: Project_versionsBatchUpdateRequest,
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Update multiple projectss in a single request (requires ownership)"""
-    logger.debug(f"Batch updating {len(request.items)} projectss")
+    """Update multiple project_versionss in a single request (requires ownership)"""
+    logger.debug(f"Batch updating {len(request.items)} project_versionss")
     
-    service = ProjectsService(db)
+    service = Project_versionsService(db)
     results = []
     
     try:
@@ -229,7 +223,7 @@ async def update_projectss_batch(
             if result:
                 results.append(result)
         
-        logger.info(f"Batch updated {len(results)} projectss successfully")
+        logger.info(f"Batch updated {len(results)} project_versionss successfully")
         return results
     except Exception as e:
         await db.rollback()
@@ -237,47 +231,47 @@ async def update_projectss_batch(
         raise HTTPException(status_code=500, detail=f"Batch update failed: {str(e)}")
 
 
-@router.put("/{id}", response_model=ProjectsResponse)
-async def update_projects(
+@router.put("/{id}", response_model=Project_versionsResponse)
+async def update_project_versions(
     id: int,
-    data: ProjectsUpdateData,
+    data: Project_versionsUpdateData,
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Update an existing projects (requires ownership)"""
-    logger.debug(f"Updating projects {id} with data: {data}")
+    """Update an existing project_versions (requires ownership)"""
+    logger.debug(f"Updating project_versions {id} with data: {data}")
 
-    service = ProjectsService(db)
+    service = Project_versionsService(db)
     try:
         # Only include non-None values for partial updates
         update_dict = {k: v for k, v in data.model_dump().items() if v is not None}
         result = await service.update(id, update_dict, user_id=str(current_user.id))
         if not result:
-            logger.warning(f"Projects with id {id} not found for update")
-            raise HTTPException(status_code=404, detail="Projects not found")
+            logger.warning(f"Project_versions with id {id} not found for update")
+            raise HTTPException(status_code=404, detail="Project_versions not found")
         
-        logger.info(f"Projects {id} updated successfully")
+        logger.info(f"Project_versions {id} updated successfully")
         return result
     except HTTPException:
         raise
     except ValueError as e:
-        logger.error(f"Validation error updating projects {id}: {str(e)}")
+        logger.error(f"Validation error updating project_versions {id}: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Error updating projects {id}: {str(e)}", exc_info=True)
+        logger.error(f"Error updating project_versions {id}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
 @router.delete("/batch")
-async def delete_projectss_batch(
-    request: ProjectsBatchDeleteRequest,
+async def delete_project_versionss_batch(
+    request: Project_versionsBatchDeleteRequest,
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Delete multiple projectss by their IDs (requires ownership)"""
-    logger.debug(f"Batch deleting {len(request.ids)} projectss")
+    """Delete multiple project_versionss by their IDs (requires ownership)"""
+    logger.debug(f"Batch deleting {len(request.ids)} project_versionss")
     
-    service = ProjectsService(db)
+    service = Project_versionsService(db)
     deleted_count = 0
     
     try:
@@ -286,8 +280,8 @@ async def delete_projectss_batch(
             if success:
                 deleted_count += 1
         
-        logger.info(f"Batch deleted {deleted_count} projectss successfully")
-        return {"message": f"Successfully deleted {deleted_count} projectss", "deleted_count": deleted_count}
+        logger.info(f"Batch deleted {deleted_count} project_versionss successfully")
+        return {"message": f"Successfully deleted {deleted_count} project_versionss", "deleted_count": deleted_count}
     except Exception as e:
         await db.rollback()
         logger.error(f"Error in batch delete: {str(e)}", exc_info=True)
@@ -295,25 +289,25 @@ async def delete_projectss_batch(
 
 
 @router.delete("/{id}")
-async def delete_projects(
+async def delete_project_versions(
     id: int,
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Delete a single projects by ID (requires ownership)"""
-    logger.debug(f"Deleting projects with id: {id}")
+    """Delete a single project_versions by ID (requires ownership)"""
+    logger.debug(f"Deleting project_versions with id: {id}")
     
-    service = ProjectsService(db)
+    service = Project_versionsService(db)
     try:
         success = await service.delete(id, user_id=str(current_user.id))
         if not success:
-            logger.warning(f"Projects with id {id} not found for deletion")
-            raise HTTPException(status_code=404, detail="Projects not found")
+            logger.warning(f"Project_versions with id {id} not found for deletion")
+            raise HTTPException(status_code=404, detail="Project_versions not found")
         
-        logger.info(f"Projects {id} deleted successfully")
-        return {"message": "Projects deleted successfully", "id": id}
+        logger.info(f"Project_versions {id} deleted successfully")
+        return {"message": "Project_versions deleted successfully", "id": id}
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error deleting projects {id}: {str(e)}", exc_info=True)
+        logger.error(f"Error deleting project_versions {id}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
